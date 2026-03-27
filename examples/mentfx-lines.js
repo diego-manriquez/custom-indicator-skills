@@ -23,7 +23,7 @@ const fxrUpsertBar = (
   fxrBarOpen,
   fxrBarHigh,
   fxrBarLow,
-  fxrBarClose
+  fxrBarClose,
 ) => {
   const fxrLastIndex = fxrTimeBars.length - 1;
   if (fxrLastIndex >= 0 && fxrTimeBars[fxrLastIndex] === fxrBarTime) {
@@ -47,7 +47,7 @@ const fxrTrimBars = (
   fxrHighBars,
   fxrLowBars,
   fxrCloseBars,
-  fxrMaxDays
+  fxrMaxDays,
 ) => {
   if (fxrMaxDays <= 0 || fxrTimeBars.length < 10) return;
 
@@ -72,13 +72,13 @@ const fxrGetCandleByIndex = (
   fxrOpenBars,
   fxrHighBars,
   fxrLowBars,
-  fxrCloseBars
+  fxrCloseBars,
 ) => ({
   candleTime: fxrTimeBars[fxrIndex],
   candleOpen: fxrOpenBars[fxrIndex],
   candleHigh: fxrHighBars[fxrIndex],
   candleLow: fxrLowBars[fxrIndex],
-  candleClose: fxrCloseBars[fxrIndex]
+  candleClose: fxrCloseBars[fxrIndex],
 });
 
 const fxrIsCandleBodyHigher = (fxrCandle, fxrHighLevel) =>
@@ -93,7 +93,7 @@ const fxrComputeMentfxLevels = (
   fxrHighBars,
   fxrLowBars,
   fxrCloseBars,
-  fxrMaxDays
+  fxrMaxDays,
 ) => {
   const fxrLength = fxrTimeBars.length;
   if (fxrLength < 5) {
@@ -137,7 +137,7 @@ const fxrComputeMentfxLevels = (
       fxrOpenBars,
       fxrHighBars,
       fxrLowBars,
-      fxrCloseBars
+      fxrCloseBars,
     );
     const fxrLeftData = fxrGetCandleByIndex(
       i - 1,
@@ -145,7 +145,7 @@ const fxrComputeMentfxLevels = (
       fxrOpenBars,
       fxrHighBars,
       fxrLowBars,
-      fxrCloseBars
+      fxrCloseBars,
     );
     const fxrTwoLeftData = fxrGetCandleByIndex(
       i - 2,
@@ -153,7 +153,7 @@ const fxrComputeMentfxLevels = (
       fxrOpenBars,
       fxrHighBars,
       fxrLowBars,
-      fxrCloseBars
+      fxrCloseBars,
     );
     const fxrRightData = fxrGetCandleByIndex(
       i + 1,
@@ -161,7 +161,7 @@ const fxrComputeMentfxLevels = (
       fxrOpenBars,
       fxrHighBars,
       fxrLowBars,
-      fxrCloseBars
+      fxrCloseBars,
     );
 
     if (
@@ -347,22 +347,22 @@ const fxrComputeMentfxLevels = (
 
   return {
     upperValue: fxrUpperValue,
-    lowerValue: fxrLowerValue
+    lowerValue: fxrLowerValue,
   };
 };
 
 init = () => {
-  indicator({ onMainPanel: true, format: 'price' });
+  indicator({ onMainPanel: true, format: "price" });
 
   input.int(
-    'Max Days',
+    "Max Days",
     30,
-    'maxDays',
+    "maxDays",
     0,
     365,
     1,
-    'Max days to render. Use 0 to keep all processed bars.',
-    'Calculation'
+    "Max days to render. Use 0 to keep all processed bars.",
+    "Calculation",
   );
 };
 
@@ -396,7 +396,7 @@ onTick = (length, _moment, _, ta, inputs) => {
     fxrCurrentOpen,
     fxrCurrentHigh,
     fxrCurrentLow,
-    fxrCurrentClose
+    fxrCurrentClose,
   );
 
   fxrTrimBars(
@@ -405,7 +405,7 @@ onTick = (length, _moment, _, ta, inputs) => {
     fxrMentfxHighBars,
     fxrMentfxLowBars,
     fxrMentfxCloseBars,
-    fxrMaxDays
+    fxrMaxDays,
   );
 
   const fxrMentfx = fxrComputeMentfxLevels(
@@ -414,9 +414,29 @@ onTick = (length, _moment, _, ta, inputs) => {
     fxrMentfxHighBars,
     fxrMentfxLowBars,
     fxrMentfxCloseBars,
-    fxrMaxDays
+    fxrMaxDays,
   );
 
-  plot.line('MentFX High', fxrMentfx.upperValue, 'rgba(37, 150, 190, 1)', 9);
-  plot.line('MentFX Low', fxrMentfx.lowerValue, 'rgba(37, 150, 190, 1)', 9);
+  plot.line(
+    "MentFX High",
+    fxrMentfx.upperValue,
+    "rgba(37, 150, 190, 1)",
+    9,
+    0,
+    undefined,
+    undefined,
+    true,
+    2,
+  );
+  plot.line(
+    "MentFX Low",
+    fxrMentfx.lowerValue,
+    "rgba(37, 150, 190, 1)",
+    9,
+    0,
+    undefined,
+    undefined,
+    true,
+    2,
+  );
 };
