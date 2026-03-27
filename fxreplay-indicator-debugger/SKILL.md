@@ -13,6 +13,7 @@ Read these references before changing code:
 - `../fxreplay-indicator-builder/references/interpreter-and-pinejs.md`
 - `../fxreplay-indicator-builder/references/ta-methods.md`
 - `../fxreplay-indicator-builder/references/validation-and-safety.md`
+- `../fxreplay-indicator-builder/references/drawing-api.md` when the script uses labels, lines, rectangles, or drawing lifecycle helpers
 - `../fxreplay-indicator-builder/references/inputs.md` if the script uses configurable parameters
 - `../fxreplay-indicator-builder/references/input-int.md` if integer inputs are involved
 - `../fxreplay-indicator-builder/references/state-and-helpers.md` if the script keeps arrays, helper methods, state objects, or per-bar guards outside `onTick`

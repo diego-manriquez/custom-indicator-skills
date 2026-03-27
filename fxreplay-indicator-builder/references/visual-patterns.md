@@ -78,8 +78,29 @@ Common drawing helpers seen in working indicators:
 
 - `rectangle(...)`
 - `trendLine(...)`
+- `rayLine(...)`
+- `horizontalLine(...)`
+- `horizontalRay(...)`
 - `verticalLine(...)`
 - `textPoint(...)`
+- `flag(...)`
+- `icon(...)`
+
+For structure-style overlays such as swing highs/lows, BOS, MSS, session ranges, and horizontal break markers, prefer these drawing helpers over `plot.shapes(...)`.
+
+Example:
+
+```javascript
+if (isSwingHigh) {
+  textPoint(time(swingLength), high(swingLength), 'SH', {
+    color: color.white,
+    backgroundColor: color.red,
+    fontsize: 10,
+    bold: true,
+    fillBackground: true
+  });
+}
+```
 
 For drawings that update through the bar or across sessions, store IDs and delete old drawings before redrawing:
 
@@ -89,6 +110,12 @@ state.box = rectangle(startTs, top, time(0), bottom, style);
 ```
 
 Use this pattern when a shape is provisional and should be replaced as the current bar evolves.
+
+Lifecycle helpers that are also available:
+
+- `updateDrawingById(...)`
+- `deleteDrawingById(...)`
+- `deleteDrawingByCondition(...)`
 
 ## Once-Per-Bar Gates
 

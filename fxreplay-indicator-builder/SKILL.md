@@ -14,6 +14,7 @@ Read these references before coding:
 - Always read `references/interpreter-and-pinejs.md`.
 - Always read `references/ta-methods.md`.
 - Always read `references/validation-and-safety.md`.
+- Read `references/drawing-api.md` when the indicator uses structure overlays, labels, lines, rectangles, zones, or drawing lifecycle helpers.
 - Read `references/inputs.md` when the indicator has user-configurable settings.
 - Read `references/input-int.md` when integer inputs such as length, period, lookback, or bars-back are needed.
 - Read `references/state-and-helpers.md` when the indicator needs persistent variables, arrays, helper functions, or once-per-bar state.
@@ -48,6 +49,7 @@ Read these references before coding:
 - Prefer `calc.*` for TA helpers that already exist in the runtime when you want the most direct PineJS-oriented path.
 - Prefer `ta.*` when the indicator already maintains explicit arrays and needs array-based math such as `rma`, `ema`, `vwma`, `stdev`, or `atr`.
 - When using `ta.*`, assume many helpers return full arrays and read the latest value explicitly.
+- For structure-style overlays such as swings, BOS, MSS, trend markers, and zones, prefer drawing APIs like `textPoint`, `rectangle`, and `trendLine` over `plot.shapes(...)`.
 - For drawings that update over time, delete or replace prior IDs explicitly instead of stacking duplicates by accident.
 - When an operation should happen once per candle, gate it with bar time instead of letting it fire on every tick.
 - Favor simple, readable code over clever abstractions.
