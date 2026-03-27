@@ -55,6 +55,12 @@ Important consequence:
 - do not try to pass `plotIndex` or `sessionId`
 - the runtime injects those tracking arguments automatically
 
+Current limitation:
+
+- drawing creation helpers such as `rectangle(...)`, `textPoint(...)`, and `trendLine(...)` can be wrapped in module-scope helpers
+- drawing lifecycle helpers such as `deleteDrawingById(...)`, `updateDrawingById(...)`, and `deleteDrawingByCondition(...)` should be called directly inside `onTick`
+- do not assume lifecycle helpers are safely rewritten when they appear inside external helper functions
+
 ## Common Patterns
 
 ### One label per confirmed swing
@@ -86,6 +92,8 @@ rectangle(time(barsAgo), breakPrice, time(0), breakPrice, {
 if (activeBoxId !== null) deleteDrawingById(activeBoxId);
 activeBoxId = rectangle(startTs, top, time(0), bottom, style);
 ```
+
+Keep this delete-and-redraw step in `onTick` unless the interpreter is updated to rewrite lifecycle helpers in external module-scope functions too.
 
 ## Choosing The Right Primitive
 

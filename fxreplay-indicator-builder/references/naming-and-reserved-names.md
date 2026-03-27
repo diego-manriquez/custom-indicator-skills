@@ -2,7 +2,7 @@
 
 Read this reference before writing or refactoring any FX Replay indicator.
 
-FX Replay injects runtime identifiers and editor globals before user code runs. Do not use the following names for user-defined variables, functions, constants, helpers, input handles, arrays, or module-scope state.
+FX Replay injects runtime identifiers and editor globals before user code runs. Do not use the following names for user-defined variables, functions, constants, helpers, input handles, arrays, module-scope state, or properties inside persistent state objects.
 
 ## Hard Reserved
 
@@ -185,6 +185,7 @@ Do not reuse built-in drawing helper names such as:
 - Use descriptive names such as `fxrFastLengthInput`, `fxrTrendBias`, `fxrAtrSeries`, and `fxrDrawSignalLabel`.
 - Do not use `__` prefixes for user names.
 - Avoid generic names like `value`, `line`, `text`, `state`, `context`, `input`, and `plot` even when the collision is not immediately visible.
+- Avoid reserved runtime names like `high`, `low`, `time`, and `volume` even as object property keys inside user-authored state objects.
 
 ## Safe Examples
 
@@ -192,6 +193,7 @@ Do not reuse built-in drawing helper names such as:
 const fxrLengthInput = input.int('Length', 14, 'fxrLength', 1, 200, 1);
 let fxrLastBarTime = null;
 const fxrCloseSeries = [];
+const fxrSessionState = { sessionHigh: -Infinity, sessionLow: Infinity };
 
 const fxrCalcSignal = () => {
   return closeC(0) > openC(0);

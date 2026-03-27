@@ -51,6 +51,7 @@ Read these references before coding:
 - When using `ta.*`, assume many helpers return full arrays and read the latest value explicitly.
 - For structure-style overlays such as swings, BOS, MSS, trend markers, and zones, prefer drawing APIs like `textPoint`, `rectangle`, and `trendLine` over `plot.shapes(...)`.
 - For drawings that update over time, delete or replace prior IDs explicitly instead of stacking duplicates by accident.
+- Keep drawing lifecycle helpers like `deleteDrawingById(...)` and `updateDrawingById(...)` directly in `onTick` unless the interpreter explicitly supports rewriting them inside external helpers.
 - When an operation should happen once per candle, gate it with bar time instead of letting it fire on every tick.
 - Favor simple, readable code over clever abstractions.
 - Avoid browser, network, timer, constructor, or other general app APIs that are rejected by validation.

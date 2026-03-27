@@ -30,6 +30,7 @@ Use this checklist when reviewing or repairing an FX Replay indicator.
 - Does `plot.colorer` target the correct plot name?
 - Are static guides defined once in `init` when possible?
 - Are provisional drawings deleted before replacement?
+- If lifecycle helpers are used, are they called from `onTick` instead of module-scope helpers?
 - Are session or timezone drawings protected against duplicate creation?
 
 ## Output Quality

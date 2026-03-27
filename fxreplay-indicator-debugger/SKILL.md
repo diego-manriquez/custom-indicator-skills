@@ -43,6 +43,7 @@ Read these references before changing code:
 - Add once-per-bar gates when arrays, labels, or drawings should not update multiple times inside the same candle.
 - Fix array-based `ta.*` misuse such as passing source functions where arrays are required, forgetting to read the latest element, or pushing duplicate intrabar values.
 - Ensure drawing IDs are deleted or replaced when the intended behavior is "update" instead of "accumulate".
+- Check whether `deleteDrawingById(...)`, `updateDrawingById(...)`, or similar lifecycle helpers were placed in external module-scope helpers; if so, move those calls back into `onTick` unless the runtime rewrite explicitly supports them there.
 - Fix validation blockers such as unsupported APIs, constructor usage, missing history guards, or misuse of `input.src(...)`.
 - Preserve user-visible behavior unless the bug itself requires a behavior change.
 - If the docs are incomplete, state the assumption behind the fix.

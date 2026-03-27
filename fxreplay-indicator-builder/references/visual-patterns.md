@@ -111,6 +111,8 @@ state.box = rectangle(startTs, top, time(0), bottom, style);
 
 Use this pattern when a shape is provisional and should be replaced as the current bar evolves.
 
+Today, keep the `deleteDrawingById(...)` call in `onTick`. Module-scope helpers can prepare state and geometry, but lifecycle helpers are not reliably rewritten there yet.
+
 Lifecycle helpers that are also available:
 
 - `updateDrawingById(...)`
