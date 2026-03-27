@@ -10,6 +10,7 @@ Use this skill when the user wants an FX Replay indicator written or extended.
 Read these references before coding:
 
 - Always read `references/lifecycle.md`.
+- Always read `references/naming-and-reserved-names.md`.
 - Read `references/inputs.md` when the indicator has user-configurable settings.
 - Read `references/input-int.md` when integer inputs such as length, period, lookback, or bars-back are needed.
 - Read `references/state-and-helpers.md` when the indicator needs persistent variables, arrays, helper functions, or once-per-bar state.
@@ -35,6 +36,7 @@ Read these references before coding:
 - If inputs alone cannot protect the logic, add runtime guards in `onTick`.
 - Keep persistent arrays and drawing IDs in module scope when they must survive across ticks.
 - Keep helper functions in module scope when they are reused, computationally independent, or make `onTick` easier to read.
+- Never introduce user-defined identifiers that collide with reserved runtime, interpreter, or editor names; prefer an `fxr` prefix for generated helpers, state, arrays, and inputs.
 - For drawings that update over time, delete or replace prior IDs explicitly instead of stacking duplicates by accident.
 - When an operation should happen once per candle, gate it with bar time instead of letting it fire on every tick.
 - Favor simple, readable code over clever abstractions.
