@@ -11,6 +11,7 @@ Read these references before changing code:
 
 - `../fxreplay-indicator-builder/references/lifecycle.md`
 - `../fxreplay-indicator-builder/references/interpreter-and-pinejs.md`
+- `../fxreplay-indicator-builder/references/ta-methods.md`
 - `../fxreplay-indicator-builder/references/validation-and-safety.md`
 - `../fxreplay-indicator-builder/references/inputs.md` if the script uses configurable parameters
 - `../fxreplay-indicator-builder/references/input-int.md` if integer inputs are involved
@@ -30,6 +31,7 @@ Read these references before changing code:
 6. Verify that plots and colorers are wired consistently.
 7. Verify that inputs are named clearly and constrained when the allowed range is known.
 8. Verify first-bar safety, source-input handling, and MTF declaration placement.
+9. Verify that `ta.*` usage matches its array-based contract and is not being mixed incorrectly with source functions or `calc.*` expectations.
 
 ## Fix Strategy
 
@@ -38,6 +40,7 @@ Read these references before changing code:
 - Add input constraints and runtime guards when values can become invalid.
 - Reduce duplicated work inside `onTick`.
 - Add once-per-bar gates when arrays, labels, or drawings should not update multiple times inside the same candle.
+- Fix array-based `ta.*` misuse such as passing source functions where arrays are required, forgetting to read the latest element, or pushing duplicate intrabar values.
 - Ensure drawing IDs are deleted or replaced when the intended behavior is "update" instead of "accumulate".
 - Fix validation blockers such as unsupported APIs, constructor usage, missing history guards, or misuse of `input.src(...)`.
 - Preserve user-visible behavior unless the bug itself requires a behavior change.

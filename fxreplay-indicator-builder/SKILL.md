@@ -12,6 +12,7 @@ Read these references before coding:
 - Always read `references/lifecycle.md`.
 - Always read `references/naming-and-reserved-names.md`.
 - Always read `references/interpreter-and-pinejs.md`.
+- Always read `references/ta-methods.md`.
 - Always read `references/validation-and-safety.md`.
 - Read `references/inputs.md` when the indicator has user-configurable settings.
 - Read `references/input-int.md` when integer inputs such as length, period, lookback, or bars-back are needed.
@@ -26,7 +27,7 @@ Read these references before coding:
 2. Author against the real execution model: the script is validated, then transformed into PineJS-oriented code.
 3. Put setup only in `init`: inputs, names, options, MTF declarations, and visual configuration.
 4. Put market-reactive logic only in `onTick`: calculations, conditions, plots, and drawings.
-5. Prefer supported interpreter-aware helpers such as `calc.*`, `newVar/newSeries`, source inputs, and `mtf.*` over improvised abstractions when both express the same logic.
+5. Choose the data model first: use `calc.*` for interpreter-friendly series helpers, and `ta.*` when the script intentionally works from explicit arrays and rolling buffers.
 6. Keep `onTick` lean and safe on the first bar. Add lookback and finite-value guards before math, plots, and drawings.
 7. Prevent duplicate drawings and repeated actions by storing or checking state when needed.
 8. If the docs do not cover a behavior, say which assumption you are making instead of inventing certainty.
@@ -44,7 +45,9 @@ Read these references before coding:
 - Write scripts that can survive one mocked validation pass before historical context exists.
 - Treat `input.src(...)` values as series functions inside `onTick`, not as raw strings.
 - Declare `mtf.timeframe(...)` in `init` and read `mtf.*` values in `onTick`.
-- Prefer `calc.*` for TA helpers that already exist in the runtime because they map directly to PineJS stdlib calls.
+- Prefer `calc.*` for TA helpers that already exist in the runtime when you want the most direct PineJS-oriented path.
+- Prefer `ta.*` when the indicator already maintains explicit arrays and needs array-based math such as `rma`, `ema`, `vwma`, `stdev`, or `atr`.
+- When using `ta.*`, assume many helpers return full arrays and read the latest value explicitly.
 - For drawings that update over time, delete or replace prior IDs explicitly instead of stacking duplicates by accident.
 - When an operation should happen once per candle, gate it with bar time instead of letting it fire on every tick.
 - Favor simple, readable code over clever abstractions.

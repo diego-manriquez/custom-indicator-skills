@@ -60,6 +60,23 @@ Typical supported examples include:
 
 Prefer these helpers over ad hoc wrappers when the logic is already available there.
 
+### `ta.*` helpers
+
+`ta.*` is also available in `onTick`, but it serves a different purpose than `calc.*`.
+
+Use `ta.*` when:
+
+- the script keeps explicit arrays outside `onTick`
+- the indicator intentionally works from buffered history
+- the math is easier to express as array transforms than as direct series calls
+
+Important distinction:
+
+- `calc.*` is the interpreter-aware path that maps more directly to PineJS stdlib calls
+- `ta.*` is an array-oriented runtime helper library
+
+Do not treat `ta.*` as if it were a drop-in replacement for direct PineJS series helpers. Author it as explicit array math.
+
 ### `newVar(...)` and `newSeries(...)`
 
 These are interpreter-aware state helpers:

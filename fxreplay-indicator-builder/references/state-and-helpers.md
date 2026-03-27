@@ -47,6 +47,36 @@ if (isNewBar) {
 
 This avoids pushing multiple duplicate values during the same candle.
 
+## Using `ta.*` With Arrays
+
+`ta.*` is a strong fit when the indicator owns its own history buffers.
+
+Typical pattern:
+
+```javascript
+const closeHistory = [];
+let lastBarTime = null;
+
+onTick = (length, _moment, _, ta, inputs) => {
+  const t0 = time(0);
+  if (!t0 || t0 === lastBarTime) return;
+  lastBarTime = t0;
+
+  closeHistory.push(closeC(0));
+  if (closeHistory.length > 300) closeHistory.shift();
+
+  const emaSeries = ta.ema(closeHistory, 20);
+  const emaValue = emaSeries[emaSeries.length - 1];
+  if (!Number.isFinite(emaValue)) return;
+};
+```
+
+Keep in mind:
+
+- many `ta.*` helpers return arrays
+- you usually want the latest element
+- source functions like `inputs.source` should be sampled first and then pushed into arrays when the helper expects array input
+
 ## State Objects
 
 Use objects when several related fields must move together:
