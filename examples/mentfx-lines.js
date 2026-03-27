@@ -1,21 +1,10 @@
 //@version=1
 
-let fxrMentfxInitialized = false;
-let fxrMentfxLatestTimeSec = NaN;
-
-let fxrMentfxUpperLevel = 0;
-let fxrMentfxLowerLevel = 99999;
-let fxrMentfxIsBullish = true;
-let fxrMentfxLastUpperLevel = NaN;
-let fxrMentfxLastLowerLevel = NaN;
-let fxrMentfxBreakIndex = false;
-let fxrMentfxLowerLow = NaN;
-let fxrMentfxHigherHigh = NaN;
-let fxrMentfxSwingHighRange = false;
-let fxrMentfxSwingLowRange = false;
-
-const fxrInitialUpperLevel = 0;
-const fxrInitialLowerLevel = 99999;
+const fxrMentfxTimeBars = [];
+const fxrMentfxOpenBars = [];
+const fxrMentfxHighBars = [];
+const fxrMentfxLowBars = [];
+const fxrMentfxCloseBars = [];
 
 const fxrToUnixSeconds = (fxrBarTime) => {
   if (!Number.isFinite(fxrBarTime)) return NaN;
@@ -24,11 +13,343 @@ const fxrToUnixSeconds = (fxrBarTime) => {
     : fxrBarTime;
 };
 
-const fxrIsBodyHigher = (fxrBarOpen, fxrBarClose, fxrLevel) =>
-  fxrBarOpen >= fxrLevel || fxrBarClose >= fxrLevel;
+const fxrUpsertBar = (
+  fxrTimeBars,
+  fxrOpenBars,
+  fxrHighBars,
+  fxrLowBars,
+  fxrCloseBars,
+  fxrBarTime,
+  fxrBarOpen,
+  fxrBarHigh,
+  fxrBarLow,
+  fxrBarClose
+) => {
+  const fxrLastIndex = fxrTimeBars.length - 1;
+  if (fxrLastIndex >= 0 && fxrTimeBars[fxrLastIndex] === fxrBarTime) {
+    fxrOpenBars[fxrLastIndex] = fxrBarOpen;
+    fxrHighBars[fxrLastIndex] = fxrBarHigh;
+    fxrLowBars[fxrLastIndex] = fxrBarLow;
+    fxrCloseBars[fxrLastIndex] = fxrBarClose;
+    return;
+  }
 
-const fxrIsBodyLower = (fxrBarOpen, fxrBarClose, fxrLevel) =>
-  fxrBarOpen <= fxrLevel || fxrBarClose <= fxrLevel;
+  fxrTimeBars.push(fxrBarTime);
+  fxrOpenBars.push(fxrBarOpen);
+  fxrHighBars.push(fxrBarHigh);
+  fxrLowBars.push(fxrBarLow);
+  fxrCloseBars.push(fxrBarClose);
+};
+
+const fxrTrimBars = (
+  fxrTimeBars,
+  fxrOpenBars,
+  fxrHighBars,
+  fxrLowBars,
+  fxrCloseBars,
+  fxrMaxDays
+) => {
+  if (fxrMaxDays <= 0 || fxrTimeBars.length < 10) return;
+
+  const fxrLatestTime = fxrTimeBars[fxrTimeBars.length - 1];
+  const fxrMaxAgeSeconds = fxrMaxDays * 24 * 60 * 60;
+
+  while (
+    fxrTimeBars.length > 10 &&
+    fxrLatestTime - fxrTimeBars[0] > fxrMaxAgeSeconds * 2
+  ) {
+    fxrTimeBars.shift();
+    fxrOpenBars.shift();
+    fxrHighBars.shift();
+    fxrLowBars.shift();
+    fxrCloseBars.shift();
+  }
+};
+
+const fxrGetCandleByIndex = (
+  fxrIndex,
+  fxrTimeBars,
+  fxrOpenBars,
+  fxrHighBars,
+  fxrLowBars,
+  fxrCloseBars
+) => ({
+  candleTime: fxrTimeBars[fxrIndex],
+  candleOpen: fxrOpenBars[fxrIndex],
+  candleHigh: fxrHighBars[fxrIndex],
+  candleLow: fxrLowBars[fxrIndex],
+  candleClose: fxrCloseBars[fxrIndex]
+});
+
+const fxrIsCandleBodyHigher = (fxrCandle, fxrHighLevel) =>
+  fxrCandle.candleOpen >= fxrHighLevel || fxrCandle.candleClose >= fxrHighLevel;
+
+const fxrIsCandleBodyLower = (fxrCandle, fxrLowLevel) =>
+  fxrCandle.candleOpen <= fxrLowLevel || fxrCandle.candleClose <= fxrLowLevel;
+
+const fxrComputeMentfxLevels = (
+  fxrTimeBars,
+  fxrOpenBars,
+  fxrHighBars,
+  fxrLowBars,
+  fxrCloseBars,
+  fxrMaxDays
+) => {
+  const fxrLength = fxrTimeBars.length;
+  if (fxrLength < 5) {
+    return { upperValue: NaN, lowerValue: NaN };
+  }
+
+  const fxrInitialHigh = 0;
+  const fxrInitialLow = 99999;
+  const fxrLastCandleTime = fxrTimeBars[fxrLength - 1];
+  const fxrMaxAgeSeconds = fxrMaxDays * 24 * 60 * 60;
+
+  const fxrAllHighs = [];
+  const fxrAllLows = [];
+
+  let fxrIsCurrentCandleSwingHigh = false;
+  let fxrIsCurrentCandleSwingLow = false;
+  let fxrSwingHighRange;
+  let fxrSwingLowRange;
+  let fxrNewHigh = fxrInitialHigh;
+  let fxrNewLow = fxrInitialLow;
+  let fxrIsBullish = true;
+  let fxrLastHigh;
+  let fxrLastLow;
+  let fxrTempLow;
+  let fxrTempHigh;
+  let fxrBreakIndex = false;
+  let fxrLowerLow;
+  let fxrHigherHigh;
+
+  for (let i = 3; i < fxrLength - 1; i++) {
+    if (
+      fxrMaxDays > 0 &&
+      fxrLastCandleTime - fxrTimeBars[i] > fxrMaxAgeSeconds
+    ) {
+      continue;
+    }
+
+    const fxrCurrentCandle = fxrGetCandleByIndex(
+      i,
+      fxrTimeBars,
+      fxrOpenBars,
+      fxrHighBars,
+      fxrLowBars,
+      fxrCloseBars
+    );
+    const fxrLeftData = fxrGetCandleByIndex(
+      i - 1,
+      fxrTimeBars,
+      fxrOpenBars,
+      fxrHighBars,
+      fxrLowBars,
+      fxrCloseBars
+    );
+    const fxrTwoLeftData = fxrGetCandleByIndex(
+      i - 2,
+      fxrTimeBars,
+      fxrOpenBars,
+      fxrHighBars,
+      fxrLowBars,
+      fxrCloseBars
+    );
+    const fxrRightData = fxrGetCandleByIndex(
+      i + 1,
+      fxrTimeBars,
+      fxrOpenBars,
+      fxrHighBars,
+      fxrLowBars,
+      fxrCloseBars
+    );
+
+    if (
+      fxrCurrentCandle.candleHigh > fxrLeftData.candleHigh &&
+      fxrCurrentCandle.candleHigh > fxrRightData.candleHigh &&
+      fxrCurrentCandle.candleHigh > fxrLastHigh
+    ) {
+      fxrIsCurrentCandleSwingHigh = true;
+    } else {
+      fxrIsCurrentCandleSwingHigh = false;
+    }
+
+    if (
+      fxrCurrentCandle.candleLow < fxrLeftData.candleLow &&
+      fxrCurrentCandle.candleLow < fxrRightData.candleLow &&
+      fxrCurrentCandle.candleLow < fxrLastLow
+    ) {
+      fxrIsCurrentCandleSwingLow = true;
+    } else {
+      fxrIsCurrentCandleSwingLow = false;
+    }
+
+    if (fxrBreakIndex) {
+      fxrBreakIndex = false;
+      let fxrAuxLow;
+      let fxrAuxHigh;
+
+      if (
+        fxrTwoLeftData.candleLow > fxrLeftData.candleOpen ||
+        fxrTwoLeftData.candleLow > fxrLeftData.candleClose
+      ) {
+        fxrAuxLow = fxrLeftData.candleLow;
+      }
+      if (
+        fxrLeftData.candleLow > fxrCurrentCandle.candleOpen ||
+        fxrLeftData.candleLow > fxrCurrentCandle.candleClose
+      ) {
+        fxrAuxLow = fxrLeftData.candleLow;
+      }
+      fxrLowerLow = fxrAuxLow;
+
+      if (
+        fxrTwoLeftData.candleHigh < fxrLeftData.candleOpen ||
+        fxrTwoLeftData.candleHigh < fxrLeftData.candleClose
+      ) {
+        fxrAuxHigh = fxrLeftData.candleHigh;
+      }
+      if (
+        fxrLeftData.candleHigh < fxrCurrentCandle.candleOpen ||
+        fxrLeftData.candleHigh < fxrCurrentCandle.candleClose
+      ) {
+        fxrAuxHigh = fxrCurrentCandle.candleHigh;
+      }
+      fxrHigherHigh = fxrAuxHigh;
+    } else {
+      if (
+        fxrCurrentCandle.candleOpen < fxrLeftData.candleLow ||
+        fxrCurrentCandle.candleClose < fxrLeftData.candleLow
+      ) {
+        fxrLowerLow = fxrCurrentCandle.candleLow;
+      } else if (fxrCurrentCandle.candleLow < fxrLowerLow) {
+        fxrLowerLow = fxrCurrentCandle.candleLow;
+      }
+
+      if (
+        fxrCurrentCandle.candleOpen > fxrLeftData.candleHigh ||
+        fxrCurrentCandle.candleClose > fxrLeftData.candleHigh
+      ) {
+        fxrHigherHigh = fxrCurrentCandle.candleHigh;
+      } else if (fxrCurrentCandle.candleHigh > fxrHigherHigh) {
+        fxrHigherHigh = fxrCurrentCandle.candleHigh;
+      }
+    }
+
+    if (fxrIsBullish) {
+      if (fxrIsCandleBodyHigher(fxrCurrentCandle, fxrNewHigh)) {
+        fxrIsBullish = true;
+        fxrNewHigh = fxrCurrentCandle.candleHigh;
+        if (fxrIsCurrentCandleSwingHigh) {
+          fxrSwingHighRange = true;
+        } else {
+          fxrSwingHighRange = false;
+        }
+        fxrTempLow = fxrLowerLow;
+        if (fxrTempLow) {
+          fxrNewLow = fxrTempLow;
+        }
+        fxrBreakIndex = true;
+      } else if (fxrIsCandleBodyLower(fxrCurrentCandle, fxrNewLow)) {
+        fxrIsBullish = false;
+        fxrNewLow = fxrCurrentCandle.candleLow;
+        fxrSwingHighRange = false;
+        if (fxrIsCurrentCandleSwingLow) {
+          fxrSwingLowRange = true;
+        } else {
+          fxrSwingLowRange = false;
+        }
+        fxrTempHigh = fxrHigherHigh;
+        if (fxrTempHigh) {
+          fxrNewHigh = fxrTempHigh;
+        }
+        fxrBreakIndex = true;
+      }
+
+      if (!fxrSwingHighRange) {
+        if (fxrIsCurrentCandleSwingHigh) {
+          fxrNewHigh = fxrCurrentCandle.candleHigh;
+          fxrSwingHighRange = true;
+        } else if (fxrCurrentCandle.candleHigh > fxrNewHigh) {
+          fxrNewHigh = fxrCurrentCandle.candleHigh;
+          fxrBreakIndex = true;
+        }
+      }
+    } else {
+      if (fxrIsCandleBodyLower(fxrCurrentCandle, fxrNewLow)) {
+        fxrIsBullish = false;
+        fxrNewLow = fxrCurrentCandle.candleLow;
+        if (fxrIsCurrentCandleSwingLow) {
+          fxrSwingLowRange = true;
+        } else {
+          fxrSwingLowRange = false;
+        }
+        fxrTempHigh = fxrHigherHigh;
+        if (fxrTempHigh) {
+          fxrNewHigh = fxrTempHigh;
+        }
+        fxrBreakIndex = true;
+      } else if (fxrIsCandleBodyHigher(fxrCurrentCandle, fxrNewHigh)) {
+        fxrIsBullish = true;
+        fxrNewHigh = fxrCurrentCandle.candleHigh;
+        fxrSwingLowRange = false;
+        if (fxrIsCurrentCandleSwingHigh) {
+          fxrSwingHighRange = true;
+        } else {
+          fxrSwingHighRange = false;
+        }
+        fxrTempLow = fxrLowerLow;
+        if (fxrTempLow) {
+          fxrNewLow = fxrTempLow;
+        }
+        fxrBreakIndex = true;
+      }
+
+      if (!fxrSwingLowRange) {
+        if (fxrIsCurrentCandleSwingLow) {
+          fxrNewLow = fxrCurrentCandle.candleLow;
+          fxrSwingLowRange = true;
+        } else if (fxrCurrentCandle.candleLow < fxrNewLow) {
+          fxrNewLow = fxrCurrentCandle.candleLow;
+          fxrBreakIndex = true;
+        }
+      }
+    }
+
+    if (fxrLastHigh !== fxrNewHigh && fxrNewHigh !== fxrInitialHigh) {
+      fxrAllHighs.push(fxrNewHigh);
+    }
+
+    if (fxrLastLow !== fxrNewLow && fxrNewLow !== fxrInitialLow) {
+      fxrAllLows.push(fxrNewLow);
+    }
+
+    fxrLastHigh = fxrNewHigh;
+    fxrLastLow = fxrNewLow;
+  }
+
+  let fxrUpperValue = NaN;
+  let fxrLowerValue = NaN;
+
+  if (fxrAllHighs.length >= 2) {
+    const fxrLastHighValue = fxrAllHighs[fxrAllHighs.length - 1];
+    if (Number.isFinite(fxrLastHighValue)) {
+      fxrUpperValue = fxrLastHighValue;
+    }
+  }
+
+  if (fxrAllLows.length >= 2) {
+    const fxrLastLowValue = fxrAllLows[fxrAllLows.length - 1];
+    if (Number.isFinite(fxrLastLowValue)) {
+      fxrLowerValue = fxrLastLowValue;
+    }
+  }
+
+  return {
+    upperValue: fxrUpperValue,
+    lowerValue: fxrLowerValue
+  };
+};
 
 init = () => {
   indicator({ onMainPanel: true, format: 'price' });
@@ -55,220 +376,47 @@ onTick = (length, _moment, _, ta, inputs) => {
   const fxrCurrentLow = low(0);
   const fxrCurrentClose = closeC(0);
 
-  const fxrLeftOpen = openC(1);
-  const fxrLeftHigh = high(1);
-  const fxrLeftLow = low(1);
-  const fxrLeftClose = closeC(1);
-
-  const fxrTwoLeftOpen = openC(2);
-  const fxrTwoLeftHigh = high(2);
-  const fxrTwoLeftLow = low(2);
-  const fxrTwoLeftClose = closeC(2);
-
-  if (!Number.isFinite(fxrCurrentBarTime)) return;
   if (
-    ![
-      fxrCurrentOpen,
-      fxrCurrentHigh,
-      fxrCurrentLow,
-      fxrCurrentClose,
-      fxrLeftOpen,
-      fxrLeftHigh,
-      fxrLeftLow,
-      fxrLeftClose,
-      fxrTwoLeftOpen,
-      fxrTwoLeftHigh,
-      fxrTwoLeftLow,
-      fxrTwoLeftClose
-    ].every(Number.isFinite)
+    !Number.isFinite(fxrCurrentBarTime) ||
+    !Number.isFinite(fxrCurrentOpen) ||
+    !Number.isFinite(fxrCurrentHigh) ||
+    !Number.isFinite(fxrCurrentLow) ||
+    !Number.isFinite(fxrCurrentClose)
   ) {
     return;
   }
 
-  if (!fxrMentfxInitialized) {
-    fxrMentfxInitialized = true;
-    fxrMentfxUpperLevel = fxrInitialUpperLevel;
-    fxrMentfxLowerLevel = fxrInitialLowerLevel;
-    fxrMentfxIsBullish = true;
-    fxrMentfxLastUpperLevel = NaN;
-    fxrMentfxLastLowerLevel = NaN;
-    fxrMentfxBreakIndex = false;
-    fxrMentfxLowerLow = fxrCurrentLow;
-    fxrMentfxHigherHigh = fxrCurrentHigh;
-    fxrMentfxSwingHighRange = false;
-    fxrMentfxSwingLowRange = false;
-    fxrMentfxLatestTimeSec = fxrCurrentBarTime;
-  }
-
-  const fxrPrevLastUpper = Number.isFinite(fxrMentfxLastUpperLevel)
-    ? fxrMentfxLastUpperLevel
-    : Number.NEGATIVE_INFINITY;
-  const fxrPrevLastLower = Number.isFinite(fxrMentfxLastLowerLevel)
-    ? fxrMentfxLastLowerLevel
-    : Number.POSITIVE_INFINITY;
-
-  const fxrIsPrevSwingHigh =
-    fxrLeftHigh > fxrTwoLeftHigh &&
-    fxrLeftHigh > fxrCurrentHigh &&
-    fxrLeftHigh > fxrPrevLastUpper;
-  const fxrIsPrevSwingLow =
-    fxrLeftLow < fxrTwoLeftLow &&
-    fxrLeftLow < fxrCurrentLow &&
-    fxrLeftLow < fxrPrevLastLower;
-
-  if (fxrMentfxBreakIndex) {
-    fxrMentfxBreakIndex = false;
-
-    let fxrAuxLow = fxrMentfxLowerLow;
-    let fxrAuxHigh = fxrMentfxHigherHigh;
-
-    if (fxrTwoLeftLow > fxrLeftOpen || fxrTwoLeftLow > fxrLeftClose) {
-      fxrAuxLow = fxrLeftLow;
-    }
-    if (fxrLeftLow > fxrCurrentOpen || fxrLeftLow > fxrCurrentClose) {
-      fxrAuxLow = fxrLeftLow;
-    }
-
-    if (fxrTwoLeftHigh < fxrLeftOpen || fxrTwoLeftHigh < fxrLeftClose) {
-      fxrAuxHigh = fxrLeftHigh;
-    }
-    if (fxrLeftHigh < fxrCurrentOpen || fxrLeftHigh < fxrCurrentClose) {
-      fxrAuxHigh = fxrCurrentHigh;
-    }
-
-    fxrMentfxLowerLow = fxrAuxLow;
-    fxrMentfxHigherHigh = fxrAuxHigh;
-  } else {
-    if (fxrCurrentOpen < fxrLeftLow || fxrCurrentClose < fxrLeftLow) {
-      fxrMentfxLowerLow = fxrCurrentLow;
-    } else if (
-      Number.isFinite(fxrMentfxLowerLow) &&
-      fxrCurrentLow < fxrMentfxLowerLow
-    ) {
-      fxrMentfxLowerLow = fxrCurrentLow;
-    }
-
-    if (fxrCurrentOpen > fxrLeftHigh || fxrCurrentClose > fxrLeftHigh) {
-      fxrMentfxHigherHigh = fxrCurrentHigh;
-    } else if (
-      Number.isFinite(fxrMentfxHigherHigh) &&
-      fxrCurrentHigh > fxrMentfxHigherHigh
-    ) {
-      fxrMentfxHigherHigh = fxrCurrentHigh;
-    }
-  }
-
-  const fxrCandleBodyHigher = fxrIsBodyHigher(
+  fxrUpsertBar(
+    fxrMentfxTimeBars,
+    fxrMentfxOpenBars,
+    fxrMentfxHighBars,
+    fxrMentfxLowBars,
+    fxrMentfxCloseBars,
+    fxrCurrentBarTime,
     fxrCurrentOpen,
-    fxrCurrentClose,
-    fxrMentfxUpperLevel
-  );
-  const fxrCandleBodyLower = fxrIsBodyLower(
-    fxrCurrentOpen,
-    fxrCurrentClose,
-    fxrMentfxLowerLevel
+    fxrCurrentHigh,
+    fxrCurrentLow,
+    fxrCurrentClose
   );
 
-  if (fxrMentfxIsBullish) {
-    if (fxrCandleBodyHigher) {
-      fxrMentfxIsBullish = true;
-      fxrMentfxUpperLevel = fxrCurrentHigh;
-      fxrMentfxSwingHighRange = fxrIsPrevSwingHigh;
-      if (Number.isFinite(fxrMentfxLowerLow)) {
-        fxrMentfxLowerLevel = fxrMentfxLowerLow;
-      }
-      fxrMentfxBreakIndex = true;
-    } else if (fxrCandleBodyLower) {
-      fxrMentfxIsBullish = false;
-      fxrMentfxLowerLevel = fxrCurrentLow;
-      fxrMentfxSwingHighRange = false;
-      fxrMentfxSwingLowRange = fxrIsPrevSwingLow;
-      if (Number.isFinite(fxrMentfxHigherHigh)) {
-        fxrMentfxUpperLevel = fxrMentfxHigherHigh;
-      }
-      fxrMentfxBreakIndex = true;
-    }
+  fxrTrimBars(
+    fxrMentfxTimeBars,
+    fxrMentfxOpenBars,
+    fxrMentfxHighBars,
+    fxrMentfxLowBars,
+    fxrMentfxCloseBars,
+    fxrMaxDays
+  );
 
-    if (!fxrMentfxSwingHighRange) {
-      if (fxrIsPrevSwingHigh) {
-        fxrMentfxUpperLevel = fxrLeftHigh;
-        fxrMentfxSwingHighRange = true;
-      } else if (fxrCurrentHigh > fxrMentfxUpperLevel) {
-        fxrMentfxUpperLevel = fxrCurrentHigh;
-        fxrMentfxBreakIndex = true;
-      }
-    }
+  const fxrMentfx = fxrComputeMentfxLevels(
+    fxrMentfxTimeBars,
+    fxrMentfxOpenBars,
+    fxrMentfxHighBars,
+    fxrMentfxLowBars,
+    fxrMentfxCloseBars,
+    fxrMaxDays
+  );
 
-    if (!fxrMentfxSwingLowRange) {
-      if (fxrIsPrevSwingLow) {
-        fxrMentfxLowerLevel = fxrLeftLow;
-        fxrMentfxSwingLowRange = true;
-      } else if (fxrCurrentLow < fxrMentfxLowerLevel) {
-        fxrMentfxLowerLevel = fxrCurrentLow;
-        fxrMentfxBreakIndex = true;
-      }
-    }
-  } else {
-    if (fxrCandleBodyLower) {
-      fxrMentfxIsBullish = false;
-      fxrMentfxLowerLevel = fxrCurrentLow;
-      fxrMentfxSwingLowRange = fxrIsPrevSwingLow;
-      if (Number.isFinite(fxrMentfxHigherHigh)) {
-        fxrMentfxUpperLevel = fxrMentfxHigherHigh;
-      }
-      fxrMentfxBreakIndex = true;
-    } else if (fxrCandleBodyHigher) {
-      fxrMentfxIsBullish = true;
-      fxrMentfxUpperLevel = fxrCurrentHigh;
-      fxrMentfxSwingLowRange = false;
-      fxrMentfxSwingHighRange = fxrIsPrevSwingHigh;
-      if (Number.isFinite(fxrMentfxLowerLow)) {
-        fxrMentfxLowerLevel = fxrMentfxLowerLow;
-      }
-      fxrMentfxBreakIndex = true;
-    }
-
-    if (!fxrMentfxSwingLowRange) {
-      if (fxrIsPrevSwingLow) {
-        fxrMentfxLowerLevel = fxrLeftLow;
-        fxrMentfxSwingLowRange = true;
-      } else if (fxrCurrentLow < fxrMentfxLowerLevel) {
-        fxrMentfxLowerLevel = fxrCurrentLow;
-        fxrMentfxBreakIndex = true;
-      }
-    }
-
-    if (!fxrMentfxSwingHighRange) {
-      if (fxrIsPrevSwingHigh) {
-        fxrMentfxUpperLevel = fxrLeftHigh;
-        fxrMentfxSwingHighRange = true;
-      } else if (fxrCurrentHigh > fxrMentfxUpperLevel) {
-        fxrMentfxUpperLevel = fxrCurrentHigh;
-        fxrMentfxBreakIndex = true;
-      }
-    }
-  }
-
-  fxrMentfxLastUpperLevel = fxrMentfxUpperLevel;
-  fxrMentfxLastLowerLevel = fxrMentfxLowerLevel;
-  fxrMentfxLatestTimeSec = Number.isFinite(fxrMentfxLatestTimeSec)
-    ? Math.max(fxrMentfxLatestTimeSec, fxrCurrentBarTime)
-    : fxrCurrentBarTime;
-
-  const fxrMaxAgeSeconds = fxrMaxDays * 24 * 60 * 60;
-  const fxrInWindow =
-    fxrMaxDays === 0 ||
-    fxrMentfxLatestTimeSec - fxrCurrentBarTime <= fxrMaxAgeSeconds;
-
-  const fxrHighPlot =
-    fxrInWindow && fxrMentfxUpperLevel !== fxrInitialUpperLevel
-      ? fxrMentfxUpperLevel
-      : NaN;
-  const fxrLowPlot =
-    fxrInWindow && fxrMentfxLowerLevel !== fxrInitialLowerLevel
-      ? fxrMentfxLowerLevel
-      : NaN;
-
-  plot.line('MentFX High', fxrHighPlot, 'rgba(37, 150, 190, 1)', 0);
-  plot.line('MentFX Low', fxrLowPlot, 'rgba(37, 150, 190, 1)', 0);
+  plot.line('MentFX High', fxrMentfx.upperValue, 'rgba(37, 150, 190, 1)', 9);
+  plot.line('MentFX Low', fxrMentfx.lowerValue, 'rgba(37, 150, 190, 1)', 9);
 };

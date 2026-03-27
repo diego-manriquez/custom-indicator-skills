@@ -23,6 +23,13 @@ Use `plot.line(name, value, color, styleOrWidth)` for dynamic series values:
 plot.line('AO Line', centered, '#00ffbb', 0);
 ```
 
+When translating a PineJS indicator that uses stepped structure levels, prefer the matching step-style plot type instead of a regular line:
+
+```javascript
+plot.line('Structure High', structureHigh, '#2596BE', 9);
+plot.line('Structure Low', structureLow, '#2596BE', 9);
+```
+
 When reading inputs in `onTick`, use the resolved value from `inputs`, commonly with dot access when the ID is a simple identifier:
 
 ```javascript
@@ -47,6 +54,7 @@ Rules:
 - Horizontal guides can be regular plots or `band.line(...)` depending on whether they are dynamic or static.
 - The safest default signature is `plot.line(title, value, color, 0)`.
 - Treat extra visual arguments on `plot.line(...)` as optional and runtime-sensitive unless a known-good example proves they work in the current stack.
+- When a PineJS source uses a stepped plot style, mirror that with the matching `plottype` instead of drawing a regular interpolated line.
 
 For structure indicators that should appear as evolving levels rather than standalone drawing objects, keep the level in persistent state and emit it each bar with `plot.line(...)`.
 
