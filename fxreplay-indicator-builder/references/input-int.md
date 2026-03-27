@@ -49,7 +49,7 @@ init = () => {
 };
 
 onTick = (length, _moment, _, ta, inputs) => {
-  const smaLength = inputs['smaLength'];
+  const smaLength = inputs.smaLength;
   if (!Number.isFinite(smaLength) || smaLength < 1) return;
 };
 ```

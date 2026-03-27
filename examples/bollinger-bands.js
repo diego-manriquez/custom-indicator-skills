@@ -34,12 +34,12 @@ init = () => {
 };
 
 onTick = (length, _moment, _, ta, inputs) => {
-  const fxrBbSource = inputs['fxrBbSource'];
-  const fxrBbLength = inputs['fxrBbLength'];
-  const fxrBbMultiplier = inputs['fxrBbMultiplier'];
-  const fxrBbBasisColor = inputs['fxrBbBasisColor'];
-  const fxrBbUpperColor = inputs['fxrBbUpperColor'];
-  const fxrBbLowerColor = inputs['fxrBbLowerColor'];
+  const fxrBbSource = inputs.fxrBbSource;
+  const fxrBbLength = inputs.fxrBbLength;
+  const fxrBbMultiplier = inputs.fxrBbMultiplier;
+  const fxrBbBasisColor = inputs.fxrBbBasisColor;
+  const fxrBbUpperColor = inputs.fxrBbUpperColor;
+  const fxrBbLowerColor = inputs.fxrBbLowerColor;
 
   if (typeof fxrBbSource !== 'function') return;
   if (!Number.isFinite(fxrBbLength) || fxrBbLength < 1) return;
@@ -60,4 +60,14 @@ onTick = (length, _moment, _, ta, inputs) => {
   plot.line('BB Basis', fxrBasis, fxrBbBasisColor, 0);
   plot.line('BB Upper', fxrUpperBand, fxrBbUpperColor, 0);
   plot.line('BB Lower', fxrLowerBand, fxrBbLowerColor, 0);
+  plot.filledArea(
+    'fxrBbFill',
+    'BB Upper',
+    'BB Lower',
+    'BB Fill',
+    '#00AAFF',
+    85,
+    true,
+    'plot_plot'
+  );
 };

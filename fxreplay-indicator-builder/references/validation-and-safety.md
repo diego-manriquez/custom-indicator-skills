@@ -84,7 +84,7 @@ If the indicator only works after enough history has accumulated, return early u
 Treat them like this:
 
 ```javascript
-const source = inputs['source'];
+const source = inputs.source;
 if (typeof source !== 'function') return;
 const current = source(0);
 ```

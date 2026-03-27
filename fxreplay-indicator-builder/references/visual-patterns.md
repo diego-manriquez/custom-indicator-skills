@@ -23,6 +23,13 @@ Use `plot.line(name, value, color, styleOrWidth)` for dynamic series values:
 plot.line('AO Line', centered, '#00ffbb', 0);
 ```
 
+When reading inputs in `onTick`, use the resolved value from `inputs`, commonly with dot access when the ID is a simple identifier:
+
+```javascript
+const period = inputs.period;
+const source = inputs.source;
+```
+
 When the plot color must react to state, attach a `plot.colorer(...)` to the plot name:
 
 ```javascript
@@ -36,7 +43,34 @@ Rules:
 
 - The third argument of `plot.colorer` must match the plot name exactly.
 - Use stable palette indexes so the color mapping remains easy to review.
+- Prefer literal colors or runtime color constants inside color palettes.
 - Horizontal guides can be regular plots or `band.line(...)` depending on whether they are dynamic or static.
+
+## Filled Areas
+
+Use `plot.filledArea(...)` after the referenced plots have been declared:
+
+```javascript
+plot.line('Upper Band', upperBand, '#00FF00', 0);
+plot.line('Lower Band', lowerBand, '#FF0000', 0);
+plot.filledArea(
+  'band_fill',
+  'Upper Band',
+  'Lower Band',
+  'Band Fill',
+  '#0000FF',
+  60,
+  true,
+  'plot_plot'
+);
+```
+
+Guidance:
+
+- The second and third arguments must match the referenced plot titles exactly.
+- Prefer static colors for `plot.filledArea(...)`, such as hex strings, rgba strings, or runtime constants like `color.red`.
+- Do not assume `plot.filledArea(...)` supports input-driven dynamic color expressions the same way a line plot may tolerate dynamic color handling.
+- Use `transparency` for visibility tuning instead of relying only on alpha in the color string.
 
 ## Drawing Patterns
 

@@ -50,7 +50,7 @@ init = () => {
 };
 
 onTick = (length, _moment, _, ta, inputs) => {
-  const smaLength = inputs['smaLength'];
+  const smaLength = inputs.smaLength;
   if (!Number.isFinite(smaLength) || smaLength < 1) return;
 };
 ```
@@ -63,10 +63,12 @@ init = () => {
 };
 
 onTick = (length, _moment, _, ta, inputs) => {
-  const source = inputs['source'];
+  const source = inputs.source;
   if (typeof source !== 'function') return;
   const current = source(0);
 };
 ```
+
+`inputs.someId` and `inputs['someId']` are both valid patterns when the ID is known.
 
 Do not use `inputCall.id`. In this runtime, the safe lookup key is the explicit ID string you passed to `input.*(...)`.

@@ -117,6 +117,19 @@ Authoring guidance:
 - store returned IDs when the shape must later be updated or deleted
 - do not try to pass `plotIndex` or `sessionId` yourself
 
+### Plot coloring and filled areas
+
+The most reliable visual patterns are:
+
+- `plot.line(...)` for values
+- `plot.colorer(...)` for state-driven palette changes on an existing plot
+- `plot.filledArea(...)` with static fill colors between already-declared plots
+
+Important limitation:
+
+- Do not assume every plot API supports input-driven dynamic colors equally.
+- `plot.filledArea(...)` is safest when its color is a literal or runtime color constant, not a value coming from an input lookup.
+
 ## Authoring Recommendations
 
 - Keep `init` declarative: inputs, visual config, MTF declaration, and one-time setup only.
