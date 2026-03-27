@@ -47,6 +47,31 @@ if (isNewBar) {
 
 This avoids pushing multiple duplicate values during the same candle.
 
+For PineJS-style state machines that only look back a few candles, prefer tiny capped buffers instead of rescanning large history:
+
+```javascript
+const openBars = [];
+const highBars = [];
+const lowBars = [];
+const closeBars = [];
+
+onTick = () => {
+  const t0 = time(0);
+  if (!t0 || t0 === lastBarTime) return;
+  lastBarTime = t0;
+
+  pushRecent(openBars, openC(0), 3);
+  pushRecent(highBars, high(0), 3);
+  pushRecent(lowBars, low(0), 3);
+  pushRecent(closeBars, closeC(0), 3);
+
+  if (openBars.length < 3) return;
+  // current, left, two-left logic here
+};
+```
+
+This is often a better fit than full-history recomputation for stepped structure indicators.
+
 ## Using `ta.*` With Arrays
 
 `ta.*` is a strong fit when the indicator owns its own history buffers.
@@ -126,6 +151,7 @@ Guidelines:
 - Prefer pure helpers when possible.
 - Pass dependencies in as arguments instead of mutating unrelated global state.
 - Keep orchestration and side effects in `onTick` unless a small helper clearly improves readability.
+- Do not let module-scope helpers close over mutable module-scope state by name when that state is meant to persist between ticks. In this runtime, those variables are often lifted into `state.*`, so helpers should either be pure, receive the needed state as arguments, or read/write `state` explicitly.
 
 ## When Not to Move Logic Out
 

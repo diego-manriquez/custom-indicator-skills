@@ -45,6 +45,25 @@ Rules:
 - Use stable palette indexes so the color mapping remains easy to review.
 - Prefer literal colors or runtime color constants inside color palettes.
 - Horizontal guides can be regular plots or `band.line(...)` depending on whether they are dynamic or static.
+- The safest default signature is `plot.line(title, value, color, 0)`.
+- Treat extra visual arguments on `plot.line(...)` as optional and runtime-sensitive unless a known-good example proves they work in the current stack.
+
+For structure indicators that should appear as evolving levels rather than standalone drawing objects, keep the level in persistent state and emit it each bar with `plot.line(...)`.
+
+Example:
+
+```javascript
+let structureHigh = NaN;
+let structureLow = NaN;
+
+onTick = () => {
+  // update structureHigh / structureLow from your state machine
+  plot.line('Structure High', structureHigh, color.blue, 0, 2);
+  plot.line('Structure Low', structureLow, color.blue, 0, 2);
+};
+```
+
+Use this when you want chart-attached lines that behave like stepped series, not geometric drawings with explicit start and end points.
 
 ## Filled Areas
 
