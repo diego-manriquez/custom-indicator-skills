@@ -11,6 +11,8 @@ Read these references before coding:
 
 - Always read `references/lifecycle.md`.
 - Always read `references/naming-and-reserved-names.md`.
+- Always read `references/interpreter-and-pinejs.md`.
+- Always read `references/validation-and-safety.md`.
 - Read `references/inputs.md` when the indicator has user-configurable settings.
 - Read `references/input-int.md` when integer inputs such as length, period, lookback, or bars-back are needed.
 - Read `references/state-and-helpers.md` when the indicator needs persistent variables, arrays, helper functions, or once-per-bar state.
@@ -21,11 +23,13 @@ Read these references before coding:
 ## Workflow
 
 1. Identify the indicator goal, required outputs, and whether it belongs on the main chart or a separate panel.
-2. Put setup only in `init`: inputs, names, options, and visual configuration.
-3. Put market-reactive logic only in `onTick`: calculations, conditions, and drawings.
-4. Keep `onTick` lean. Avoid heavy repeated work on every tick unless the indicator requires it.
-5. Prevent duplicate drawings and repeated actions by storing or checking state when needed.
-6. If the docs do not cover a behavior, say which assumption you are making instead of inventing certainty.
+2. Author against the real execution model: the script is validated, then transformed into PineJS-oriented code.
+3. Put setup only in `init`: inputs, names, options, MTF declarations, and visual configuration.
+4. Put market-reactive logic only in `onTick`: calculations, conditions, plots, and drawings.
+5. Prefer supported interpreter-aware helpers such as `calc.*`, `newVar/newSeries`, source inputs, and `mtf.*` over improvised abstractions when both express the same logic.
+6. Keep `onTick` lean and safe on the first bar. Add lookback and finite-value guards before math, plots, and drawings.
+7. Prevent duplicate drawings and repeated actions by storing or checking state when needed.
+8. If the docs do not cover a behavior, say which assumption you are making instead of inventing certainty.
 
 ## Authoring Rules
 
@@ -37,9 +41,14 @@ Read these references before coding:
 - Keep persistent arrays and drawing IDs in module scope when they must survive across ticks.
 - Keep helper functions in module scope when they are reused, computationally independent, or make `onTick` easier to read.
 - Never introduce user-defined identifiers that collide with reserved runtime, interpreter, or editor names; prefer an `fxr` prefix for generated helpers, state, arrays, and inputs.
+- Write scripts that can survive one mocked validation pass before historical context exists.
+- Treat `input.src(...)` values as series functions inside `onTick`, not as raw strings.
+- Declare `mtf.timeframe(...)` in `init` and read `mtf.*` values in `onTick`.
+- Prefer `calc.*` for TA helpers that already exist in the runtime because they map directly to PineJS stdlib calls.
 - For drawings that update over time, delete or replace prior IDs explicitly instead of stacking duplicates by accident.
 - When an operation should happen once per candle, gate it with bar time instead of letting it fire on every tick.
 - Favor simple, readable code over clever abstractions.
+- Avoid browser, network, timer, constructor, or other general app APIs that are rejected by validation.
 
 ## Output Pattern
 

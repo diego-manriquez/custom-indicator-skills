@@ -22,7 +22,7 @@ input.int(title, value, id?, min?, max?, step?, tooltip?, group?, inline?)
 
 ## Return Value
 
-Returns an object with an `id` field. Read the chosen value from `inputs[id]` inside `onTick`.
+Use the explicit input ID to read the resolved value from `inputs` inside `onTick`.
 
 ## Guidance
 
@@ -35,7 +35,7 @@ Returns an object with an `id` field. Read the chosen value from `inputs[id]` in
 
 ```javascript
 init = () => {
-  const smaLength = input.int(
+  input.int(
     'SMA Length',
     14,
     'smaLength',
@@ -46,5 +46,10 @@ init = () => {
     'Moving Averages',
     'ma-row'
   );
+};
+
+onTick = (length, _moment, _, ta, inputs) => {
+  const smaLength = inputs['smaLength'];
+  if (!Number.isFinite(smaLength) || smaLength < 1) return;
 };
 ```

@@ -40,14 +40,33 @@ Common helpers seen in working indicators:
 
 ## Access Pattern
 
-Input helpers return an object with an `id`.
+Input helpers register the input definition. If you need the current resolved value inside `onTick`, read it from the `inputs` argument using the stable input ID string.
 
-The selected value is then read from the `inputs` argument in `onTick`:
+A robust pattern is:
 
 ```javascript
-const periodInput = input.int('SMA Length', 14, 'smaLength', 1, 200, 1);
+init = () => {
+  input.int('SMA Length', 14, 'smaLength', 1, 200, 1);
+};
 
 onTick = (length, _moment, _, ta, inputs) => {
-  const period = inputs[periodInput.id];
+  const smaLength = inputs['smaLength'];
+  if (!Number.isFinite(smaLength) || smaLength < 1) return;
 };
 ```
+
+For `input.src(...)`, the runtime value should be treated as a callable source series:
+
+```javascript
+init = () => {
+  input.src('Source', 'close', 'source');
+};
+
+onTick = (length, _moment, _, ta, inputs) => {
+  const source = inputs['source'];
+  if (typeof source !== 'function') return;
+  const current = source(0);
+};
+```
+
+Do not use `inputCall.id`. In this runtime, the safe lookup key is the explicit ID string you passed to `input.*(...)`.
