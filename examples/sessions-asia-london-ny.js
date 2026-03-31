@@ -83,6 +83,28 @@ const fxrResetSessionState = (fxrState) => {
   fxrState.sessionLow = Infinity;
 };
 
+const fxrBuildRectanglePoints = (
+  fxrStartTime,
+  fxrEndTime,
+  fxrSessionHigh,
+  fxrSessionLow
+) => {
+  return [
+    { time: fxrStartTime, price: fxrSessionHigh },
+    { time: fxrEndTime, price: fxrSessionLow }
+  ];
+};
+
+const fxrBuildRectangleStyle = (fxrColor) => {
+  return {
+    color: fxrColor,
+    backgroundColor: fxrColor,
+    fillBackground: true,
+    transparency: 85,
+    linewidth: 1
+  };
+};
+
 const fxrBuildSessionPlan = (
   fxrState,
   fxrSessionText,
@@ -94,22 +116,25 @@ const fxrBuildSessionPlan = (
   fxrTimezone
 ) => {
   const fxrPlan = {
-    drawingIdToDelete: null,
-    shouldDraw: false,
+    action: 'none',
+    drawingId: null,
     startTime: null,
+    endTime: fxrCurrentTime,
     sessionHigh: null,
     sessionLow: null
   };
 
   if (!fxrEnabled) {
-    fxrPlan.drawingIdToDelete = fxrState.activeBoxId;
+    fxrPlan.action = 'delete';
+    fxrPlan.drawingId = fxrState.activeBoxId;
     fxrResetSessionState(fxrState);
     return fxrPlan;
   }
 
   const fxrParsedSession = fxrParseSession(fxrSessionText);
   if (!fxrParsedSession) {
-    fxrPlan.drawingIdToDelete = fxrState.activeBoxId;
+    fxrPlan.action = 'delete';
+    fxrPlan.drawingId = fxrState.activeBoxId;
     fxrResetSessionState(fxrState);
     return fxrPlan;
   }
@@ -141,17 +166,17 @@ const fxrBuildSessionPlan = (
     fxrState.sessionHigh = fxrCurrentHigh;
     fxrState.sessionLow = fxrCurrentLow;
     fxrState.activeBoxId = null;
+    fxrPlan.action = 'create';
   } else {
     fxrState.sessionHigh = Math.max(fxrState.sessionHigh, fxrCurrentHigh);
     fxrState.sessionLow = Math.min(fxrState.sessionLow, fxrCurrentLow);
+    fxrPlan.action = fxrState.activeBoxId === null ? 'create' : 'update';
+    fxrPlan.drawingId = fxrState.activeBoxId;
   }
 
-  fxrPlan.drawingIdToDelete = fxrState.activeBoxId;
-  fxrPlan.shouldDraw = true;
   fxrPlan.startTime = fxrState.startTime;
   fxrPlan.sessionHigh = fxrState.sessionHigh;
   fxrPlan.sessionLow = fxrState.sessionLow;
-  fxrState.activeBoxId = null;
 
   return fxrPlan;
 };
@@ -222,23 +247,28 @@ onTick = (length, _moment, _, ta, inputs) => {
     _moment,
     inputs.sessionTimezone
   );
-  if (fxrAsiaPlan.drawingIdToDelete !== null) {
-    deleteDrawingById(fxrAsiaPlan.drawingIdToDelete);
-  }
-  if (fxrAsiaPlan.shouldDraw) {
-    fxrAsiaState.activeBoxId = rectangle(
-      fxrAsiaPlan.startTime,
-      fxrAsiaPlan.sessionHigh,
-      fxrCurrentTime,
-      fxrAsiaPlan.sessionLow,
-      {
-        color: inputs.asiaColor,
-        backgroundColor: inputs.asiaColor,
-        fillBackground: true,
-        transparency: 85,
-        linewidth: 1
-      }
-    );
+  const fxrAsiaStyle = fxrBuildRectangleStyle(inputs.asiaColor);
+  if (fxrAsiaPlan.action === 'delete' && fxrAsiaPlan.drawingId !== null) {
+    deleteDrawingById(fxrAsiaPlan.drawingId);
+  } else if (fxrAsiaPlan.action === 'create') {
+    fxrAsiaState.activeBoxId =
+      rectangle(
+        fxrAsiaPlan.startTime,
+        fxrAsiaPlan.sessionHigh,
+        fxrAsiaPlan.endTime,
+        fxrAsiaPlan.sessionLow,
+        fxrAsiaStyle
+      ) || null;
+  } else if (fxrAsiaPlan.action === 'update' && fxrAsiaPlan.drawingId !== null) {
+    updateDrawingById(fxrAsiaPlan.drawingId, {
+      moveTo: fxrBuildRectanglePoints(
+        fxrAsiaPlan.startTime,
+        fxrAsiaPlan.endTime,
+        fxrAsiaPlan.sessionHigh,
+        fxrAsiaPlan.sessionLow
+      ),
+      styles: fxrAsiaStyle
+    });
   }
 
   const fxrLondonPlan = fxrBuildSessionPlan(
@@ -251,23 +281,31 @@ onTick = (length, _moment, _, ta, inputs) => {
     _moment,
     inputs.sessionTimezone
   );
-  if (fxrLondonPlan.drawingIdToDelete !== null) {
-    deleteDrawingById(fxrLondonPlan.drawingIdToDelete);
-  }
-  if (fxrLondonPlan.shouldDraw) {
-    fxrLondonState.activeBoxId = rectangle(
-      fxrLondonPlan.startTime,
-      fxrLondonPlan.sessionHigh,
-      fxrCurrentTime,
-      fxrLondonPlan.sessionLow,
-      {
-        color: inputs.londonColor,
-        backgroundColor: inputs.londonColor,
-        fillBackground: true,
-        transparency: 85,
-        linewidth: 1
-      }
-    );
+  const fxrLondonStyle = fxrBuildRectangleStyle(inputs.londonColor);
+  if (fxrLondonPlan.action === 'delete' && fxrLondonPlan.drawingId !== null) {
+    deleteDrawingById(fxrLondonPlan.drawingId);
+  } else if (fxrLondonPlan.action === 'create') {
+    fxrLondonState.activeBoxId =
+      rectangle(
+        fxrLondonPlan.startTime,
+        fxrLondonPlan.sessionHigh,
+        fxrLondonPlan.endTime,
+        fxrLondonPlan.sessionLow,
+        fxrLondonStyle
+      ) || null;
+  } else if (
+    fxrLondonPlan.action === 'update' &&
+    fxrLondonPlan.drawingId !== null
+  ) {
+    updateDrawingById(fxrLondonPlan.drawingId, {
+      moveTo: fxrBuildRectanglePoints(
+        fxrLondonPlan.startTime,
+        fxrLondonPlan.endTime,
+        fxrLondonPlan.sessionHigh,
+        fxrLondonPlan.sessionLow
+      ),
+      styles: fxrLondonStyle
+    });
   }
 
   const fxrNewYorkPlan = fxrBuildSessionPlan(
@@ -280,22 +318,30 @@ onTick = (length, _moment, _, ta, inputs) => {
     _moment,
     inputs.sessionTimezone
   );
-  if (fxrNewYorkPlan.drawingIdToDelete !== null) {
-    deleteDrawingById(fxrNewYorkPlan.drawingIdToDelete);
-  }
-  if (fxrNewYorkPlan.shouldDraw) {
-    fxrNewYorkState.activeBoxId = rectangle(
-      fxrNewYorkPlan.startTime,
-      fxrNewYorkPlan.sessionHigh,
-      fxrCurrentTime,
-      fxrNewYorkPlan.sessionLow,
-      {
-        color: inputs.newYorkColor,
-        backgroundColor: inputs.newYorkColor,
-        fillBackground: true,
-        transparency: 85,
-        linewidth: 1
-      }
-    );
+  const fxrNewYorkStyle = fxrBuildRectangleStyle(inputs.newYorkColor);
+  if (fxrNewYorkPlan.action === 'delete' && fxrNewYorkPlan.drawingId !== null) {
+    deleteDrawingById(fxrNewYorkPlan.drawingId);
+  } else if (fxrNewYorkPlan.action === 'create') {
+    fxrNewYorkState.activeBoxId =
+      rectangle(
+        fxrNewYorkPlan.startTime,
+        fxrNewYorkPlan.sessionHigh,
+        fxrNewYorkPlan.endTime,
+        fxrNewYorkPlan.sessionLow,
+        fxrNewYorkStyle
+      ) || null;
+  } else if (
+    fxrNewYorkPlan.action === 'update' &&
+    fxrNewYorkPlan.drawingId !== null
+  ) {
+    updateDrawingById(fxrNewYorkPlan.drawingId, {
+      moveTo: fxrBuildRectanglePoints(
+        fxrNewYorkPlan.startTime,
+        fxrNewYorkPlan.endTime,
+        fxrNewYorkPlan.sessionHigh,
+        fxrNewYorkPlan.sessionLow
+      ),
+      styles: fxrNewYorkStyle
+    });
   }
 };
