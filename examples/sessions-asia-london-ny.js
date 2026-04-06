@@ -196,7 +196,7 @@ init = () => {
   input.bool('Show Asia', true, 'showAsia', 'Sessions');
   input.session(
     'Asia Session',
-    '0000-0900',
+    '0000-0500',
     'asiaSession',
     'Session window for Asia',
     'Sessions'
@@ -205,7 +205,7 @@ init = () => {
   input.bool('Show London', true, 'showLondon', 'Sessions');
   input.session(
     'London Session',
-    '0700-1600',
+    '0700-1000',
     'londonSession',
     'Session window for London',
     'Sessions'
@@ -214,7 +214,7 @@ init = () => {
   input.bool('Show New York', true, 'showNewYork', 'Sessions');
   input.session(
     'New York Session',
-    '1300-2200',
+    '1200-1600',
     'newYorkSession',
     'Session window for New York',
     'Sessions'
