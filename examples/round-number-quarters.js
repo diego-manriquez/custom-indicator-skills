@@ -30,39 +30,39 @@ init = () => {
 
   // --- Major Large Quarters ---
   input.bool('Major Large Quarters', true, 'fxrMLQEnable', 'Major Large Quarters');
-  input.bool('Use Custom Value', false, 'fxrMLQUseCustom', 'Major Large Quarters', 'mlqCustom');
+  input.bool('MLQ Use Custom Value', false, 'fxrMLQUseCustom', 'Major Large Quarters', 'mlqCustom');
   input.str('', 'Pips', 'fxrMLQCustomMode', ['Pips', 'Price'], undefined, 'Major Large Quarters', 'mlqCustom');
   input.float('', 1000, 'fxrMLQCustomVal', 0, undefined, undefined, undefined, 'Major Large Quarters', 'mlqCustom');
-  input.int('Lines above/below', 1, 'fxrMLQCount', 1, 4, 1, undefined, 'Major Large Quarters');
-  input.color('Color', color.rgba(243, 213, 0, 1), 'fxrMLQColor', 'Major Large Quarters', 'mlqStyle');
-  input.str('Style', 'solid', 'fxrMLQStyle', ['solid', 'dotted', 'dashed'], undefined, 'Major Large Quarters', 'mlqStyle');
-  input.int('Width', 3, 'fxrMLQWidth', 1, 4, 1, undefined, 'Major Large Quarters', 'mlqStyle');
-  input.bool('Show Label', true, 'fxrMLQShowLabel', 'Major Large Quarters', 'mlqLabel');
-  input.str('Label Size', 'Large', 'fxrMLQLabelSize', ['Tiny', 'Small', 'Normal', 'Large', 'Huge'], undefined, 'Major Large Quarters', 'mlqLabel');
+  input.int('MLQ Lines above/below', 1, 'fxrMLQCount', 1, 4, 1, undefined, 'Major Large Quarters');
+  input.color('MLQ Color', color.rgba(243, 213, 0, 1), 'fxrMLQColor', 'Major Large Quarters', 'mlqStyle');
+  input.str('MLQ Style', 'solid', 'fxrMLQStyle', ['solid', 'dotted', 'dashed'], undefined, 'Major Large Quarters', 'mlqStyle');
+  input.int('MLQ Width', 3, 'fxrMLQWidth', 1, 4, 1, undefined, 'Major Large Quarters', 'mlqStyle');
+  input.bool('MLQ Show Label', true, 'fxrMLQShowLabel', 'Major Large Quarters', 'mlqLabel');
+  input.str('MLQ Label Size', 'Large', 'fxrMLQLabelSize', ['Tiny', 'Small', 'Normal', 'Large', 'Huge'], undefined, 'Major Large Quarters', 'mlqLabel');
 
   // --- Large Quarters ---
   input.bool('Large Quarters', true, 'fxrLQEnable', 'Large Quarters');
-  input.bool('Use Custom Value', false, 'fxrLQUseCustom', 'Large Quarters', 'lqCustom');
+  input.bool('LQ Use Custom Value', false, 'fxrLQUseCustom', 'Large Quarters', 'lqCustom');
   input.str('', 'Pips', 'fxrLQCustomMode', ['Pips', 'Price'], undefined, 'Large Quarters', 'lqCustom');
   input.float('', 250, 'fxrLQCustomVal', 0, undefined, undefined, undefined, 'Large Quarters', 'lqCustom');
-  input.int('Lines above/below', 1, 'fxrLQCount', 1, 4, 1, undefined, 'Large Quarters');
-  input.color('Color', color.rgba(78, 151, 209, 1), 'fxrLQColor', 'Large Quarters', 'lqStyle');
-  input.str('Style', 'solid', 'fxrLQStyle', ['solid', 'dotted', 'dashed'], undefined, 'Large Quarters', 'lqStyle');
-  input.int('Width', 2, 'fxrLQWidth', 1, 4, 1, undefined, 'Large Quarters', 'lqStyle');
-  input.bool('Show Label', true, 'fxrLQShowLabel', 'Large Quarters', 'lqLabel');
-  input.str('Label Size', 'Normal', 'fxrLQLabelSize', ['Tiny', 'Small', 'Normal', 'Large', 'Huge'], undefined, 'Large Quarters', 'lqLabel');
+  input.int('LQ Lines above/below', 1, 'fxrLQCount', 1, 4, 1, undefined, 'Large Quarters');
+  input.color('LQ Color', color.rgba(78, 151, 209, 1), 'fxrLQColor', 'Large Quarters', 'lqStyle');
+  input.str('LQ Style', 'solid', 'fxrLQStyle', ['solid', 'dotted', 'dashed'], undefined, 'Large Quarters', 'lqStyle');
+  input.int('LQ Width', 2, 'fxrLQWidth', 1, 4, 1, undefined, 'Large Quarters', 'lqStyle');
+  input.bool('LQ Show Label', true, 'fxrLQShowLabel', 'Large Quarters', 'lqLabel');
+  input.str('LQ Label Size', 'Normal', 'fxrLQLabelSize', ['Tiny', 'Small', 'Normal', 'Large', 'Huge'], undefined, 'Large Quarters', 'lqLabel');
 
   // --- Quarters ---
   input.bool('Quarters', true, 'fxrQEnable', 'Quarters');
-  input.bool('Use Custom Value', false, 'fxrQUseCustom', 'Quarters', 'qCustom');
+  input.bool('Q Use Custom Value', false, 'fxrQUseCustom', 'Quarters', 'qCustom');
   input.str('', 'Pips', 'fxrQCustomMode', ['Pips', 'Price'], undefined, 'Quarters', 'qCustom');
   input.float('', 50, 'fxrQCustomVal', 0, undefined, undefined, undefined, 'Quarters', 'qCustom');
-  input.int('Lines above/below', 1, 'fxrQCount', 1, 4, 1, undefined, 'Quarters');
-  input.color('Color', color.rgba(188, 0, 70, 1), 'fxrQColor', 'Quarters', 'qStyle');
-  input.str('Style', 'solid', 'fxrQStyle', ['solid', 'dotted', 'dashed'], undefined, 'Quarters', 'qStyle');
-  input.int('Width', 1, 'fxrQWidth', 1, 4, 1, undefined, 'Quarters', 'qStyle');
-  input.bool('Show Label', true, 'fxrQShowLabel', 'Quarters', 'qLabel');
-  input.str('Label Size', 'Small', 'fxrQLabelSize', ['Tiny', 'Small', 'Normal', 'Large', 'Huge'], undefined, 'Quarters', 'qLabel');
+  input.int('Q Lines above/below', 1, 'fxrQCount', 1, 4, 1, undefined, 'Quarters');
+  input.color('Q Color', color.rgba(188, 0, 70, 1), 'fxrQColor', 'Quarters', 'qStyle');
+  input.str('Q Style', 'solid', 'fxrQStyle', ['solid', 'dotted', 'dashed'], undefined, 'Quarters', 'qStyle');
+  input.int('Q Width', 1, 'fxrQWidth', 1, 4, 1, undefined, 'Quarters', 'qStyle');
+  input.bool('Q Show Label', true, 'fxrQShowLabel', 'Quarters', 'qLabel');
+  input.str('Q Label Size', 'Small', 'fxrQLabelSize', ['Tiny', 'Small', 'Normal', 'Large', 'Huge'], undefined, 'Quarters', 'qLabel');
 };
 
 onTick = (length, _moment, _, ta, inputs) => {

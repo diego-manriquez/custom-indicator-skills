@@ -21,21 +21,21 @@ init = () => {
 
   // --- Round 00 Numbers ---
   input.bool('Round 00 Enable', true, 'fxr00Enable', 'Round 00 Numbers');
-  input.color('Line Color', color.rgba(243, 213, 0, 1), 'fxr00Color', 'Round 00 Numbers', 'r00Style');
-  input.str('Line Style', 'solid', 'fxr00Style', ['solid', 'dotted', 'dashed'], undefined, 'Round 00 Numbers', 'r00Style');
-  input.int('Line Width', 3, 'fxr00Width', 1, 4, 1, undefined, 'Round 00 Numbers', 'r00Style');
+  input.color('Round 00 Color', color.rgba(243, 213, 0, 1), 'fxr00Color', 'Round 00 Numbers', 'r00Style');
+  input.str('Round 00 Style', 'solid', 'fxr00Style', ['solid', 'dotted', 'dashed'], undefined, 'Round 00 Numbers', 'r00Style');
+  input.int('Round 00 Width', 3, 'fxr00Width', 1, 4, 1, undefined, 'Round 00 Numbers', 'r00Style');
 
   // --- Round 50 Numbers ---
   input.bool('Round 50 Enable', true, 'fxr50Enable', 'Round 50 Numbers');
-  input.color('Line Color', color.rgba(78, 151, 209, 1), 'fxr50Color', 'Round 50 Numbers', 'r50Style');
-  input.str('Line Style', 'solid', 'fxr50Style', ['solid', 'dotted', 'dashed'], undefined, 'Round 50 Numbers', 'r50Style');
-  input.int('Line Width', 2, 'fxr50Width', 1, 4, 1, undefined, 'Round 50 Numbers', 'r50Style');
+  input.color('Round 50 Color', color.rgba(78, 151, 209, 1), 'fxr50Color', 'Round 50 Numbers', 'r50Style');
+  input.str('Round 50 Style', 'solid', 'fxr50Style', ['solid', 'dotted', 'dashed'], undefined, 'Round 50 Numbers', 'r50Style');
+  input.int('Round 50 Width', 2, 'fxr50Width', 1, 4, 1, undefined, 'Round 50 Numbers', 'r50Style');
 
   // --- Round Quarters Numbers ---
   input.bool('Round Quarters Enable', true, 'fxrQEnable', 'Round Quarters Numbers');
-  input.color('Line Color', color.rgba(188, 0, 70, 1), 'fxrQColor', 'Round Quarters Numbers', 'rqStyle');
-  input.str('Line Style', 'solid', 'fxrQStyle', ['solid', 'dotted', 'dashed'], undefined, 'Round Quarters Numbers', 'rqStyle');
-  input.int('Line Width', 1, 'fxrQWidth', 1, 4, 1, undefined, 'Round Quarters Numbers', 'rqStyle');
+  input.color('Round Quarters Color', color.rgba(188, 0, 70, 1), 'fxrQColor', 'Round Quarters Numbers', 'rqStyle');
+  input.str('Round Quarters Style', 'solid', 'fxrQStyle', ['solid', 'dotted', 'dashed'], undefined, 'Round Quarters Numbers', 'rqStyle');
+  input.int('Round Quarters Width', 1, 'fxrQWidth', 1, 4, 1, undefined, 'Round Quarters Numbers', 'rqStyle');
 
   // --- General ---
   input.int('Number of Each Line above/below', 1, 'fxrNumLines', 1, 4, 1);
