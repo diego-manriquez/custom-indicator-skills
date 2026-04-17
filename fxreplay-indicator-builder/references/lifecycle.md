@@ -40,4 +40,5 @@ Because `onTick` runs frequently, keep it efficient. Heavy loops or unnecessary 
 - If repeated drawings or actions are possible, track enough state to avoid duplicates.
 - Persistent state that must survive between ticks should live in module-scope variables or arrays.
 - If logic should run once per completed or current bar, gate it with `time(0)` or a similar timestamp check.
+- If logic should only run on the most recent bar (e.g. drawing-only indicators), guard with `if (!isLastProcessedBar) return;`. Note: `isLastProcessedBar` is a property, not a method — do not call it with parentheses.
 - If arrays grow every bar, cap their length when unbounded growth is unnecessary.

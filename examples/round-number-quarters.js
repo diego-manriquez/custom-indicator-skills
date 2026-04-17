@@ -66,7 +66,7 @@ init = () => {
 };
 
 onTick = (length, _moment, _, ta, inputs) => {
-  if (!isLastProcessedBar()) return;
+  if (!isLastProcessedBar) return;
 
   const t0 = time(0);
   if (!Number.isFinite(t0)) return;
