@@ -76,12 +76,15 @@ onTick = (length, _moment, _, ta, inputs) => {
   }
   fxrLines = [];
 
+  const fxrPriceScale = Math.round(1 / minTick);
+  const fxrRound = (p) => Math.round(p * fxrPriceScale) / fxrPriceScale;
+
   const drawnPrices = [];
   const numLines = inputs.fxrNumLines;
 
   const fxrDrawLevel = (price, lineColor, lineStyle, lineWidth) => {
     for (let j = 0; j < drawnPrices.length; j++) {
-      if (Math.abs(drawnPrices[j] - price) < minTick * 0.5) return;
+      if (drawnPrices[j] === price) return;
     }
     drawnPrices.push(price);
 
@@ -97,15 +100,15 @@ onTick = (length, _moment, _, ta, inputs) => {
   const fxrDrawLevels = (step, isEnabled, lineColor, lineStyle, lineWidth) => {
     if (!isEnabled || step <= 0) return;
     for (let i = 0; i < numLines; i++) {
-      let stepUp = Math.ceil(currentClose / step) * step + i * step;
+      let stepUp = fxrRound(Math.ceil(currentClose / step) * step + i * step);
       while (drawnPrices.indexOf(stepUp) !== -1) {
-        stepUp = stepUp + step;
+        stepUp = fxrRound(stepUp + step);
       }
       fxrDrawLevel(stepUp, lineColor, lineStyle, lineWidth);
 
-      let stepDown = Math.floor(currentClose / step) * step - i * step;
+      let stepDown = fxrRound(Math.floor(currentClose / step) * step - i * step);
       while (drawnPrices.indexOf(stepDown) !== -1) {
-        stepDown = stepDown - step;
+        stepDown = fxrRound(stepDown - step);
       }
       fxrDrawLevel(stepDown, lineColor, lineStyle, lineWidth);
     }

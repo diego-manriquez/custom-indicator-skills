@@ -25,6 +25,7 @@ Common helpers seen in working indicators:
 
 ## Design Rules
 
+- Input titles (the first argument) must be unique across the entire indicator. If multiple groups share similar controls, prefix the title with the group abbreviation (e.g. `'MLQ Color'`, `'LQ Color'`, `'Q Color'`).
 - Use descriptive titles so the settings panel stays understandable.
 - Use `group` to cluster related parameters.
 - Use `inline` only for controls that should share the same row.
