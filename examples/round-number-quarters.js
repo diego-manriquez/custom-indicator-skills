@@ -78,14 +78,14 @@ onTick = (length, _moment, _, ta, inputs) => {
   const currentClose = closeC(0);
   if (!Number.isFinite(currentClose) || currentClose <= 0) return;
 
-  const minTick = getMinTick();
-  if (!Number.isFinite(minTick) || minTick <= 0) return;
+  const pipSize = getPipSize();
+  if (!Number.isFinite(pipSize) || pipSize <= 0) return;
 
   const assetType = getAssetType();
 
-  let pipValue = minTick;
+  let pipValue = pipSize;
   if (assetType !== 'futures' && assetType !== 'crypto') {
-    pipValue = minTick;
+    pipValue = pipSize;
   }
 
   const fxrCalcStep = (useCustom, customMode, customVal, defaultPips) => {
@@ -116,13 +116,17 @@ onTick = (length, _moment, _, ta, inputs) => {
   }
   fxrLines = [];
 
+  // Price scale for rounding (inverse of pipSize)
+  const fxrPriceScale = Math.round(1 / pipSize);
+  const fxrRound = (p) => Math.round(p * fxrPriceScale) / fxrPriceScale;
+
   // Track drawn prices to avoid overlap
   const drawnPrices = [];
 
   const fxrDrawLevel = (price, lineColor, lineStyle, lineWidth, showLabel, labelSize, labelText) => {
     // Skip if already drawn at this price
     for (let j = 0; j < drawnPrices.length; j++) {
-      if (Math.abs(drawnPrices[j] - price) < minTick * 0.5) return;
+      if (drawnPrices[j] === price) return;
     }
     drawnPrices.push(price);
 
@@ -143,16 +147,16 @@ onTick = (length, _moment, _, ta, inputs) => {
     if (!isEnabled || step <= 0) return;
     for (let i = 0; i < count; i++) {
       // Step up
-      let stepUp = Math.ceil(currentClose / step) * step + i * step;
+      let stepUp = fxrRound(Math.ceil(currentClose / step) * step + i * step);
       while (drawnPrices.indexOf(stepUp) !== -1) {
-        stepUp = stepUp + step;
+        stepUp = fxrRound(stepUp + step);
       }
       fxrDrawLevel(stepUp, lineColor, lineStyle, lineWidth, showLabel, labelSize, labelText);
 
       // Step down
-      let stepDown = Math.floor(currentClose / step) * step - i * step;
+      let stepDown = fxrRound(Math.floor(currentClose / step) * step - i * step);
       while (drawnPrices.indexOf(stepDown) !== -1) {
-        stepDown = stepDown - step;
+        stepDown = fxrRound(stepDown - step);
       }
       fxrDrawLevel(stepDown, lineColor, lineStyle, lineWidth, showLabel, labelSize, labelText);
     }
