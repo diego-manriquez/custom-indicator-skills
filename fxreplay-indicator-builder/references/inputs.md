@@ -22,6 +22,40 @@ Common helpers seen in working indicators:
 - `input.color(...)`
 - `input.src(...)`
 - `input.session(...)`
+- `input.time(...)`
+- `input.textarea(...)`
+- `input.timeframe(...)`
+- `input.symbol(...)`
+
+## Exact Signatures
+
+Each input helper has a fixed positional parameter order. Do not pass extra positional arguments or reorder them.
+
+### `input.bool(title, value, id?, group?, tooltip?, inline?)`
+
+### `input.int(title, value, id?, min?, max?, step?, tooltip?, group?, inline?)`
+
+### `input.float(title, value, id?, min?, max?, step?, tooltip?, group?, inline?)`
+
+### `input.str(title, value, id?, options?, tooltip?, group?, inline?)`
+
+- `options` is an optional `string[]` for dropdown choices. Pass `[]` or omit when no dropdown is needed.
+
+### `input.textarea(title, value, id?, tooltip?, group?, inline?)`
+
+### `input.time(title, value, id?, min, max, tooltip?, group?, inline?)`
+
+### `input.session(title, value, id?, tooltip?, group?, inline?)`
+
+### `input.color(title, value, id?, group?, tooltip?, inline?)`
+
+- `value` must be a named color constant from the `color` runtime object (e.g. `color.red`, `color.gray`) or an `color.rgba(r, g, b, a)` call. Raw strings like `'rgb(255,0,0)'` or hex strings like `'#ff0000'` are **not valid**. Always use `color.*` constants or `color.rgba(...)`.
+
+### `input.src(title, value, id?, group?, tooltip?, inline?)`
+
+### `input.timeframe(title, value?, id?, group?, tooltip?, inline?)`
+
+### `input.symbol(title, value?, id?, group?, tooltip?, inline?)`
 
 ## Design Rules
 
